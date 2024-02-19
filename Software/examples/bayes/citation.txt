@@ -1,0 +1,1 @@
+Ayad Al-Rumaithi (2024). Bayesian Estimation Example (https://www.mathworks.com/matlabcentral/fileexchange/71993-bayesian-estimation-example), MATLAB Central File Exchange. Retrieved February 19, 2024.

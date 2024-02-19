@@ -73,7 +73,7 @@ Il primo passo, indispensabile prima di eseguire misurazioni attraverso sistemi 
 
 \section{Setup sperimentale}
 \subsection{Setup lineare}
-Il primo setup è stato realizzato montando una guida rettilinea su un banco ottico. La guida presenta un profilo munito di sedi per dadi "a T", all'interno delle quali viene fatto scorrere il carrello. La telecamera può essere montata sul carrello orientata in vario modo rispetto all'asse del movimento. La guida ha una lunghezza utile di $2\ m$.
+Il primo setup è stato realizzato montando una guida rettilinea su un banco ottico. La guida presenta un profilo munito di sedi per dadi "a T", all'interno delle quali viene fatto scorrere un carrello. La telecamera può essere montata sul carrello orientata in vario modo rispetto all'asse del movimento. La guida ha una lunghezza utile di $2\ m$.
 \subsection{Setup angolare}
 Il secondo setup, pensato per poter permettere unicamente la rotazione sul piano orizzontale, è stato realizzato incernierando l'estremità di un'asta al banco ottico. La telecamera è stata montata in corrispondenza della cerniera, in modo da minimizzare la componente traslatoria del movimento, e quindi le interferenze nelle rilevazioni sperimentali.
 
@@ -81,10 +81,10 @@ Il secondo setup, pensato per poter permettere unicamente la rotazione sul piano
 
 \subsection{Marker ArUco}
 
-Per stimare l'incertezza in ciascuna delle due direzioni e ad angoli differenti abbiamo posizionato un marker ArUco $100mm\times100mm$, variandone l'orientamento, davanti alla camera, quindi abbiamo mosso la camera nella direzione perpendicolare a quella lungo la quale eravamo interessati a stimare l'incertezza. Abbiamo poi eseguito una regressione lineare ai minimi quadrati sulle posizioni misurate e stimato l'incertezza attraverso la \ref{eq:lls}.
-\vspace{-4pt}
+Per stimare l'incertezza in ciascuna delle due direzioni e ad angoli differenti abbiamo posizionato un marker ArUco $100mm\times100mm$, variandone l'orientamento, davanti alla camera, quindi abbiamo mosso la camera nella direzione perpendicolare a quella lungo la quale eravamo interessati a stimare l'incertezza. Abbiamo poi eseguito una regressione lineare ai minimi quadrati sulle posizioni misurate e stimato l'incertezza attraverso il calcolo della deviazione standard \ref{eq:lls}.
+%\vspace{-4pt}
 \begin{equation}
-    \sigma = \sqrt{\frac{\sum_{j=1}^{m}(y(x_{j})-y_{j})}{m-n}}
+    \sigma = \sqrt{\frac{\sum_{j=1}^{m}(y(x_{j})-y_{j})^{2}}{m-n}}
     \label{eq:lls}
 \end{equation}
 \vspace{-8pt}
@@ -101,7 +101,7 @@ I risultati ottenuti sono riportati in tabella \ref{tab:uaruco}.
     \caption{Incertezze sulle misure dei marker ArUco.}
     \label{tab:uaruco}
 \end{table}
-\vspace{-18pt}
+\vspace{-12pt}
 \subsection{Odometria visivo-inerziale}
 
 La stima dell'incertezza legata all'odometria risulta più complessa, in quanto si tratta di un metodo di misura \emph{incrementale}. Inoltre, gli algoritmi utilizzati dal software della telecamera non sono noti, ciò rende lo strumento, una \emph{black-box}.
@@ -112,7 +112,7 @@ $n=1$.
 \paragraph{Incertezza incrementale} La stima dell'incertezza incrementale si è svolta in due fasi. A partire dal modello \ref{eq:model}, e assumendo assenza di correlazione tra le incertezze, abbiamo ottenuto la propagazione dell'incertezza \ref{eq:prop}. Ragionamenti analoghi valgono per la coordinata $z$.
 \vspace{-4pt}
 \begin{equation}
-        x_n =x_{n-1}+\Delta x  \sin{(\theta_{n-1})}
+        x_n =x_{n-1}+\Delta x  \cos{(\theta_{n-1})}
     \label{eq:model}
 \end{equation}
 \vspace{-10pt}
@@ -121,7 +121,6 @@ $n=1$.
         \sigma_{x_n}^2 = \sigma_{x_{n-1}}^2 + \sigma_{\Delta x}^2 \cos{(\theta_{n-1})}^2 + \sigma_{\theta_{n-1}}^2 \Delta x ^2 \sin{(\theta_{n-1})}^2
         \label{eq:prop}
 \end{equation}
-
 Dove
 \begin{equation}
     \sigma_{\theta_{n}}^2 = \sigma_{\theta_{n-1}}^2 + \sigma_{\omega}^2 \delta t^2
@@ -134,7 +133,7 @@ Abbiamo verificato sperimentalmente la correttezza del modello che però non si 
     \centering
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-       $x$ [$mm$]          & $0$ & $1500$ & $1000$ & $1500$ & $2000$\\
+       $x$ [$mm$]          & $0$ & $500$ & $1000$ & $1500$ & $2000$\\
     \hline
         $\sigma_x$ [$mm$]&  $7.7$ & $3.2$ & $30$ & $55$ & $80$\\
         $\sigma_z$ [$mm$]&  $6.6$ & $3.7$ & $6.9$ & $13$ & $18$\\
@@ -144,8 +143,8 @@ Abbiamo verificato sperimentalmente la correttezza del modello che però non si 
     \caption{Incertezze sulle misure odometriche al variare della distanza percorsa.}
     \label{tab:uncertainties}
 \end{table}
-\vspace{-15pt}
-Il modello è ottenuto minimizzando la somma dei quadrati dei residui (metodo dei minimi quadrati) attraverso la fattorizzazione QR ed è costituito da una funzione della forma \ref{eq:model}, dove $y = {x,z,\theta}$.
+\vspace{-10pt}
+Il modello è ottenuto attraverso il metodo dei minimi quadrati e la fattorizzazione QR ed è costituito da una funzione della forma \ref{eq:model}, dove $y = {x,z,\theta}$ e $p_x,\ p_z$ e $v_x,\ v_z$ rappresentano posizione e velocità lungo $x$ e $z$.
 \vspace{-10pt}
 \begin{equation}
     y = \beta_0 + \beta_{1}p_{x} + \beta_{2}p_{z} + \beta_{3}v_{x} + \beta_{4}v_{z} + \beta_{5}\theta
@@ -154,45 +153,21 @@ Il modello è ottenuto minimizzando la somma dei quadrati dei residui (metodo de
 
 \section{Algoritmi implementati}
 
-Il primo algoritmo consiste nell'implementazione del teorema del limite centrale per unire le informazioni ricavate dai marker e quelle fornite dall'odometria, il teorema del limite centrale, applicato ad un caso sperimentale, ottiene un'incertezza $max(\sigma_{clt}) = 0.14\ m$.
-
-Il secondo algoritmo sfrutta il teorema di Bayes.
-
-Infine il terzo algoritmo realizza un filtro di Kalman utilizzando il modello in \ref{eq:kalman}.
-\begin{equation}
-\underbrace{
-    \begin{bmatrix}
-            x_{n}\\z_{n}\\\theta_{n}
-    \end{bmatrix}
-}_{\hat{x_n}}
-=\underbrace{
-    \begin{bmatrix}
-           1 & 0 & \cos(\theta_{n-1})\\
-           0 & 1 & \cos(\theta_{n-1})\\
-           0 & 0 & 1
-    \end{bmatrix}
-}_{F}
-\underbrace{
-    \begin{bmatrix}
-            x_{n-1}\\z_{n-1}\\\theta_{n-1}
-    \end{bmatrix}
-}_{x_{n-1}}
-+
-\underbrace{
-    \begin{bmatrix}
-           1 & 0 \\
-           0 & 1 \\
-           0 & 0
-    \end{bmatrix}
-}_{G}
-\underbrace{
-    \begin{bmatrix}
-           v_{x}\\
-           v_{z}
-    \end{bmatrix}
-}_{u}
-\label{eq:kalman}
-\end{equation}
+Il primo algoritmo consiste nell'implementazione del teorema del limite centrale per unire le informazioni ricavate dai marker e quelle fornite dall'odometria.\\
+Il secondo algoritmo realizza un filtro di Kalman.\\
+In tabella \ref{tab:finaluncertainties} sono riportate, a scopo dimostrativo, le incertezze sulle misure dello spostamento lungo $z$ ottenute dall'odometria e da ciascuno dei due algoritmi.
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|c |c| c| c|}
+    \hline
+       $\sigma_{odom}$ [$m$] & $\sigma_{clt}$ [$m$] & $\sigma_{kf}$ [$m$] \\
+       \hline
+        $0.12$ & $0.079$ &  $0.080 $\\
+        \hline
+    \end{tabular}
+    \caption{Incertezza sulla misura della posizione lungo $z$ ottenuta dall'odometria e dai due algoritmi implementati.}
+    \label{tab:finaluncertainties}
+\end{table}
 %----------------------------------------------------------------------------------------
 %	 REFERENCES
 %----------------------------------------------------------------------------------------
